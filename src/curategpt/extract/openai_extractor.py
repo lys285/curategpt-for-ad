@@ -124,7 +124,8 @@ class OpenAIExtractor(Extractor):
             obj = json.loads(r)
             if conversation:
                 conversation.append(messages[-1])
-                conversation.append({"role": "function", "name": FUNC_NAME, "content": r})
+                conversation.append(
+                    {"role": "function", "name": FUNC_NAME, "content": r})
         except json.decoder.JSONDecodeError as e:
             if self.raise_error_if_unparsable:
                 raise e
