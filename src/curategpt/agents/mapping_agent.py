@@ -1,4 +1,4 @@
-"""Chat with a KB."""
+"""An agent to map/align entities."""
 
 import json
 import logging
@@ -108,7 +108,8 @@ class MappingAgent(BaseAgent):
             # primarily for testing
             shuffle(kb_results)
         if include_predicates:
-            mappings = list(self.categorize_mappings(query, kb_results, **kwargs))
+            mappings = list(self.categorize_mappings(
+                query, kb_results, **kwargs))
             return MappingSet(mappings=mappings)
         model = self.extractor.model
         while True:
@@ -120,7 +121,8 @@ class MappingAgent(BaseAgent):
             for obj, _, _obj_meta in kb_results:
                 i += 1
                 obj_text = yaml.dump(
-                    {k: v for k, v in obj.items() if v and (fields is None or k in fields)},
+                    {k: v for k, v in obj.items() if v and (
+                        fields is None or k in fields)},
                     sort_keys=False,
                 )
                 references[str(i)] = obj_text
@@ -130,7 +132,8 @@ class MappingAgent(BaseAgent):
             prompt = PROMPT_TEMPLATE.format(body="".join(texts), query=query)
             logger.debug(f"Prompt: {prompt}")
             estimated_length = estimate_num_tokens([prompt])
-            logger.debug(f"Max tokens {model.model_id}: {max_tokens_by_model(model.model_id)}")
+            logger.debug(
+                f"Max tokens {model.model_id}: {max_tokens_by_model(model.model_id)}")
             # TODO: use a more precise estimate of the length
             if estimated_length + 300 < max_tokens_by_model(model.model_id):
                 break
@@ -142,7 +145,8 @@ class MappingAgent(BaseAgent):
         response = model.prompt(prompt)
 
         # Need to remove Markdown formatting here or it won't parse as JSON
-        response_text = remove_formatting(text=response.text(), expect_format="json")
+        response_text = remove_formatting(
+            text=response.text(), expect_format="json")
 
         mappings = []
         try:
@@ -194,7 +198,8 @@ class MappingAgent(BaseAgent):
                 pred = MappingPredicate[response_text]
             else:
                 pred = MappingPredicate.UNKNOWN
-            m = Mapping(subject_id=query, object_id=result[0]["id"], predicate_id=pred)
+            m = Mapping(subject_id=query,
+                        object_id=result[0]["id"], predicate_id=pred)
             yield m
 
     def find_links(self, other_collection: str) -> Iterator[Tuple[str, str, str]]:
@@ -206,7 +211,8 @@ class MappingAgent(BaseAgent):
         """
         # TODO
         for _, _, info in self.knowledge_source.find(
-            collection=other_collection, include=["embeddings", "documents", "metadatas"]
+            collection=other_collection, include=[
+                "embeddings", "documents", "metadatas"]
         ):
             embeddings = info["embeddings"]
             self.knowledge_source.find(embeddings, limit=10)

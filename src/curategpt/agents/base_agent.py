@@ -28,4 +28,5 @@ class BaseAgent(ABC):  # noqa: B024
     """Engine performing LLM operations, including extracting from prompt responses"""
 
     def search(self):
-        raise NotImplementedError("Search method must be implemented by subclass")
+        raise NotImplementedError(
+            "Search method must be implemented by subclass")

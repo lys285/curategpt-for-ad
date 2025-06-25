@@ -65,7 +65,8 @@ class DatabaseAugmentedStructuredExtraction(BaseAgent):
     background_document_limit: int = 3
     """Number of background documents to use. TODO: more sophisticated way to estimate."""
 
-    default_masked_fields: List[str] = field(default_factory=lambda: ["original_id"])
+    default_masked_fields: List[str] = field(
+        default_factory=lambda: ["original_id"])
 
     def extract(
         self,
@@ -135,7 +136,7 @@ class DatabaseAugmentedStructuredExtraction(BaseAgent):
             ):
                 obj_text = obj_meta["document"]
                 # TODO: use tiktoken to estimate
-                obj_text = obj_text[0 : self.max_background_document_size]
+                obj_text = obj_text[0: self.max_background_document_size]
                 docs.append(obj_text)
         if generate_background:
             # prompt = f"Generate a comprehensive description about the {target_class} with {context_property} = {seed}"

@@ -1,3 +1,5 @@
+"""Agent to summarize entities"""
+
 import logging
 from dataclasses import dataclass
 from typing import List
@@ -54,7 +56,8 @@ class SummarizationAgent(BaseAgent):
             raise ValueError("Must provide a name field")
         knowledge_source = self.knowledge_source
         if isinstance(knowledge_source, BaseWrapper):
-            object_iter = knowledge_source.objects(self.knowledge_source_collection, object_ids)
+            object_iter = knowledge_source.objects(
+                self.knowledge_source_collection, object_ids)
         else:
             object_iter = knowledge_source.lookup_multiple(
                 object_ids, collection=self.knowledge_source_collection
@@ -66,9 +69,11 @@ class SummarizationAgent(BaseAgent):
         if any(desc[0] is None for desc in descriptions):
             raise ValueError(f"Missing name for objects: {objects}")
         if strict:
-            missing_descriptions = [name for name, desc in descriptions if desc is None]
+            missing_descriptions = [name for name,
+                                    desc in descriptions if desc is None]
             if missing_descriptions:
-                raise ValueError(f"Missing descriptions for objects: {missing_descriptions}")
+                raise ValueError(
+                    f"Missing descriptions for objects: {missing_descriptions}")
         if not descriptions:
             raise ValueError(f"No descriptions found for objects: {objects}")
         desc_lengths = [len(desc[1] or "") for desc in descriptions]
@@ -78,7 +83,8 @@ class SummarizationAgent(BaseAgent):
         else:
             sep = "; "
         text = sep.join([f"{desc[0]}: {desc[1]}" for desc in descriptions])
-        logger.info(f"Summarizing {len(descriptions)} objects with {len(text)} characters")
+        logger.info(
+            f"Summarizing {len(descriptions)} objects with {len(text)} characters")
         model = self.extractor.model
         if not system_prompt:
             system_prompt = "Summarize these entities"
