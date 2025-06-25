@@ -38,7 +38,8 @@ class EvidenceAgent(BaseAgent):
 
     chat_agent: Union[ChatAgent, BaseWrapper] = None
 
-    evidence_update_policy: EvidenceUpdatePolicyEnum = field(default=EvidenceUpdatePolicyEnum.skip)
+    evidence_update_policy: EvidenceUpdatePolicyEnum = field(
+        default=EvidenceUpdatePolicyEnum.skip)
 
     def find_evidence(self, obj: Union[str, Dict]) -> ChatResponse:
         obj_as_str = obj if isinstance(obj, str) else object_as_yaml(obj)
@@ -78,7 +79,8 @@ class EvidenceAgent(BaseAgent):
             current_length = 0
             for obj, _, _obj_meta in kb_results:
                 i += 1
-                obj_text = yaml.dump({k: v for k, v in obj.items() if v}, sort_keys=False)
+                obj_text = yaml.dump(
+                    {k: v for k, v in obj.items() if v}, sort_keys=False)
                 references[str(i)] = obj_text
                 texts.append(f"## Reference\n{obj_text}")
                 current_length += len(obj_text)
@@ -97,7 +99,8 @@ class EvidenceAgent(BaseAgent):
                 break
             else:
                 # remove least relevant
-                logger.debug(f"Removing least relevant of {len(kb_results)}: {kb_results[-1]}")
+                logger.debug(
+                    f"Removing least relevant of {len(kb_results)}: {kb_results[-1]}")
                 if not kb_results:
                     raise ValueError(f"Prompt too long: {prompt}.")
                 kb_results.pop()

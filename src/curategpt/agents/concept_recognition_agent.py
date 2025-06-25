@@ -1,6 +1,7 @@
 """Annotation (Concept Recognition) in texts."""
 
 import logging
+import re
 from dataclasses import dataclass
 from enum import Enum
 from typing import Dict, List, Optional, Tuple
@@ -127,9 +128,6 @@ Then for the text 'I love courgettes!' you should return
 Always try and match the longest span.
 The concept ID should come only from the list of candidate concepts supplied to you.
 """
-
-
-import re
 
 
 def parse_annotations(text, marker_char: str = None) -> List[CONCEPT]:
@@ -283,7 +281,8 @@ class ConceptRecognitionAgent(BaseAgent):
                 )
                 spans.append(span)
         # spans = parse_spans(response.text(), concept_dict)
-        ann = GroundingResult(input_text=text, annotated_text=response.text(), spans=spans)
+        ann = GroundingResult(
+            input_text=text, annotated_text=response.text(), spans=spans)
         return ann
 
     def annotate(
@@ -340,7 +339,8 @@ class ConceptRecognitionAgent(BaseAgent):
                 **kwargs,
             )
             if not concept.spans:
-                logger.debug(f"Unable to ground concept {term} in category {category}")
+                logger.debug(
+                    f"Unable to ground concept {term} in category {category}")
                 continue
             main_span = concept.spans[0]
             spans.append(
@@ -376,7 +376,8 @@ class ConceptRecognitionAgent(BaseAgent):
 
         logger.info(f"Anns: {anns}")
         spans = [
-            Span(text=ann[0], concept_id=ann[1], concept_label=concept_dict.get(ann[1], None))
+            Span(text=ann[0], concept_id=ann[1],
+                 concept_label=concept_dict.get(ann[1], None))
             for ann in anns
         ]
         return AnnotatedText(input_text=text, spans=spans, annotated_text=response.text())
@@ -436,7 +437,8 @@ class ConceptRecognitionAgent(BaseAgent):
             if not id:
                 raise ValueError(f"Object {obj} has no ID field {id_field}")
             if not label:
-                raise ValueError(f"Object {obj} has no label field {label_field}")
+                raise ValueError(
+                    f"Object {obj} has no label field {label_field}")
             prompt += f"{label} // {id}   \n"
             concept_pairs.append((id, label))
         return concept_pairs, prompt

@@ -97,7 +97,8 @@ def dump(
 
 # logger = logging.getLogger(__name__)
 
-path_option = click.option("-p", "--path", help="Path to a file or directory for database.")
+path_option = click.option(
+    "-p", "--path", help="Path to a file or directory for database.")
 database_type_option = click.option(
     "-D",
     "--database-type",
@@ -123,7 +124,8 @@ extract_format_option = click.option(
     help="Format to use for extraction.",
 )
 schema_option = click.option("-s", "--schema", help="Path to schema.")
-collection_option = click.option("-c", "--collection", help="Collection within the database.")
+collection_option = click.option(
+    "-c", "--collection", help="Collection within the database.")
 output_format_option = click.option(
     "-t",
     "--output-format",
@@ -310,7 +312,8 @@ def index(
     db = get_store(database_type, path)
     db.text_lookup = text_field
     if glob:
-        files = [str(gf.absolute()) for f in files for gf in Path().glob(f) if gf.is_file()]
+        files = [str(gf.absolute())
+                 for f in files for gf in Path().glob(f) if gf.is_file()]
     if view:
         view_args = {}
         if view_settings:
@@ -364,7 +367,8 @@ def index(
             with gzip.open(file, "rt", encoding=encoding) as f:
                 objs = list(csv.DictReader(f, delimiter="\t"))
         elif file.endswith(".tsv"):
-            objs = list(csv.DictReader(open(file, encoding=encoding), delimiter="\t"))
+            objs = list(csv.DictReader(
+                open(file, encoding=encoding), delimiter="\t"))
         else:
             objs = yaml.safe_load_all(open(file, encoding=encoding))
         if isinstance(objs, (dict, BaseModel)):
@@ -386,7 +390,8 @@ def index(
             raise NotImplementedError(
                 "Use yq instead, e.g. yq eval 'del(.. | .evidence?)' input.yaml"
             )
-        db.insert(objs, model=model, collection=collection, batch_size=batch_size)
+        db.insert(objs, model=model, collection=collection,
+                  batch_size=batch_size)
     db.update_collection_metadata(
         collection, model=model, object_type=object_type, description=description
     )
@@ -631,7 +636,8 @@ def annotate(
                 new_texts.append(sentence.strip())
         texts = new_texts
     for text in texts:
-        ao = cr.annotate(text, collection=collection, categories=categories, **kwargs)
+        ao = cr.annotate(text, collection=collection,
+                         categories=categories, **kwargs)
         dump(ao)
         print("---\n")
 
@@ -714,7 +720,8 @@ def extract(
     if schema_manager:
         db.schema_proxy = schema
         extractor.schema_proxy = schema_manager
-    agent = DatabaseAugmentedStructuredExtraction(knowledge_source=db, extractor=extractor)
+    agent = DatabaseAugmentedStructuredExtraction(
+        knowledge_source=db, extractor=extractor)
     if docstore_path or docstore_collection:
         agent.document_adapter = ChromaDBAdapter(docstore_path)
         agent.document_adapter_collection = docstore_collection
@@ -804,7 +811,8 @@ def extract_from_pubmed(
     if schema_manager:
         db.schema_proxy = schema
         extractor.schema_proxy = schema_manager
-    agent = DatabaseAugmentedStructuredExtraction(knowledge_source=db, extractor=extractor)
+    agent = DatabaseAugmentedStructuredExtraction(
+        knowledge_source=db, extractor=extractor)
     if docstore_path or docstore_collection:
         agent.document_adapter = ChromaDBAdapter(docstore_path)
         agent.document_adapter_collection = docstore_collection
@@ -906,7 +914,8 @@ def bootstrap_data(config, schema, model):
         schema_dict = yaml.safe_load(open(schema))
     else:
         schema_dict = None
-    yaml_str = bootstrap_agent.bootstrap_data(specification=config, schema=schema_dict)
+    yaml_str = bootstrap_agent.bootstrap_data(
+        specification=config, schema=schema_dict)
     print(yaml_str)
 
 
@@ -1003,7 +1012,8 @@ def complete(
         dac.document_adapter_collection = docstore_collection
     if ":" in query:
         query = yaml.safe_load(query)
-    ao = dac.complete(query, context_property=query_property, rules=rule, **filtered_kwargs)
+    ao = dac.complete(query, context_property=query_property,
+                      rules=rule, **filtered_kwargs)
     dump(ao.object, format=output_format)
 
 
@@ -1105,7 +1115,8 @@ def update(
         )
         if output_format == "yaml":
             click.echo("---")
-        dump(ao.object, format=output_format, old_object=obj, primary_key=primary_key)
+        dump(ao.object, format=output_format,
+             old_object=obj, primary_key=primary_key)
 
 
 @main.command()
@@ -1209,7 +1220,8 @@ def review(
         )
         if output_format == "yaml":
             print("---")
-        dump(ao.object, format=output_format, old_object=obj, primary_key=primary_key)
+        dump(ao.object, format=output_format,
+             old_object=obj, primary_key=primary_key)
 
 
 @main.command()
@@ -1297,7 +1309,8 @@ def complete_multiple(
             query = query.split("\t")[0]
             if ":" in query:
                 query = yaml.safe_load(query)
-            ao = dac.complete(query, context_property=query_property, rules=rule, **filtered_kwargs)
+            ao = dac.complete(
+                query, context_property=query_property, rules=rule, **filtered_kwargs)
             print("---")
             dump(ao.object, format=output_format)
 
@@ -1583,14 +1596,16 @@ def generate_evaluate(
         extractor.schema_proxy = schema_manager
     rage = DragonAgent(knowledge_source=db, extractor=extractor)
     if docstore_path or docstore_collection:
-        rage.document_adapter = get_store(docstore_database_type, docstore_path)
+        rage.document_adapter = get_store(
+            docstore_database_type, docstore_path)
         rage.document_adapter_collection = docstore_collection
     hold_back_fields = hold_back_fields.split(",")
     mask_fields = mask_fields.split(",") if mask_fields else []
     evaluator = DatabaseAugmentedCompletionEvaluator(
         agent=rage, fields_to_predict=hold_back_fields, fields_to_mask=mask_fields
     )
-    results = evaluator.evaluate(test_collection, num_tests=num_tests, **kwargs)
+    results = evaluator.evaluate(
+        test_collection, num_tests=num_tests, **kwargs)
     print(yaml.dump(results.dict(), sort_keys=False))
 
 
@@ -1795,7 +1810,8 @@ def multiprompt(file, model, system, prompt):
     model_obj = get_model(model)
     with open(file) as f:
         for row in csv.DictReader(f, delimiter="\t"):
-            resp = model_obj.prompt(system=system, prompt=prompt.format(**row)).text()
+            resp = model_obj.prompt(
+                system=system, prompt=prompt.format(**row)).text()
             resp = resp.replace("\n", " ")
             print("\t".join(list(row.values()) + [resp]))
 
@@ -1849,7 +1865,8 @@ def ask(query, path, collection, model, show_references, _continue, conversation
     chatbot = ChatAgent(path)
     chatbot.extractor = extractor
     chatbot.knowledge_source = db
-    response = chatbot.chat(query, collection=collection, conversation=conversation)
+    response = chatbot.chat(query, collection=collection,
+                            conversation=conversation)
     show_chat_response(response, show_references)
 
 
@@ -1965,7 +1982,8 @@ def citeseek(
     if not collection or collection == "pubmed":
         chatbot = PubmedWrapper(local_store=db, extractor=extractor)
     else:
-        chatbot = ChatAgent(db, extractor=extractor, knowledge_source_collection=collection)
+        chatbot = ChatAgent(db, extractor=extractor,
+                            knowledge_source_collection=collection)
     ea = EvidenceAgent(chat_agent=chatbot)
     if Path(query).exists():
         try:
@@ -2038,7 +2056,8 @@ def summarize(ids, path, collection, model, view, database_type, **kwargs):
         extractor.model_name = model
     if view:
         db = get_wrapper(view)
-    agent = SummarizationAgent(db, extractor=extractor, knowledge_source_collection=collection)
+    agent = SummarizationAgent(
+        db, extractor=extractor, knowledge_source_collection=collection)
     response = agent.summarize(ids, **kwargs)
     print("# Response:")
     click.echo(response)
@@ -2089,7 +2108,8 @@ def list_collections(database_type, path, peek: bool, minimal: bool, derived: bo
         if database_type == "chromadb":
             # TODO: make get_or_create abstract and implement in DBAdapter?
             c = db.client.get_collection(cn)
-            print(f"## Collection: {cn} N={c.count()} meta={c.metadata} \n" f"Metadata: {cm}\n")
+            print(
+                f"## Collection: {cn} N={c.count()} meta={c.metadata} \n" f"Metadata: {cm}\n")
             if peek:
                 r = c.peek()
                 for id_ in r["ids"]:
@@ -2262,7 +2282,8 @@ def split_collection(
     # TODO: not tested
     db = get_store(database_type, path)
     if test_id_file:
-        kwargs["testing_identifiers"] = [line.strip().split()[0] for line in test_id_file]
+        kwargs["testing_identifiers"] = [line.strip().split()[0]
+                                         for line in test_id_file]
         logging.info(
             f"Using {len(kwargs['testing_identifiers'])} testing identifiers from {test_id_file.name}"
         )
@@ -2398,7 +2419,8 @@ def load_embeddings_from_file(file_path, embedding_format=None):
     elif file_path.endswith(".csv") or file_path.endswith(".csv.gz") or embedding_format == "csv":
         df = pd.read_csv(file_path)
     else:
-        raise ValueError("Unsupported file type. Only Parquet and CSV files are supported.")
+        raise ValueError(
+            "Unsupported file type. Only Parquet and CSV files are supported.")
     return df.to_dict(orient="records")
 
 
@@ -2434,7 +2456,8 @@ def load_embeddings(path, collection, append, embedding_format, model, file_or_u
     db = get_store(database_type, path)
     if append:
         if collection in db.list_collection_names():
-            print(f"Collection '{collection}' already exists. Adding to the existing collection.")
+            print(
+                f"Collection '{collection}' already exists. Adding to the existing collection.")
     else:
         db.remove_collection(collection, exists_ok=True)
 
@@ -2479,9 +2502,11 @@ def upload_embeddings(path, collection, repo_id, private, adapter, database_type
         )
     try:
         if database_type == "chromadb":
-            agent.upload(objects=objects, metadata=metadata, repo_id=repo_id, private=private)
+            agent.upload(objects=objects, metadata=metadata,
+                         repo_id=repo_id, private=private)
         elif database_type == "duckdb":
-            agent.upload_duckdb(objects=objects, metadata=metadata, repo_id=repo_id, private=private)
+            agent.upload_duckdb(
+                objects=objects, metadata=metadata, repo_id=repo_id, private=private)
     except Exception as e:
         print(f"Error uploading collection to {repo_id}: {e}")
 
@@ -2533,15 +2558,15 @@ def download_embeddings(path, collection, repo_id, embeddings_filename, metadata
         if embeddings_filename:
             embedding_filename = repo_id + "/" + embeddings_filename
             parquet_download = agent.cached_download(repo_id=repo_id,
-                                     repo_type="dataset",
-                                     filename=embedding_filename
-                                     )
+                                                     repo_type="dataset",
+                                                     filename=embedding_filename
+                                                     )
         if metadata_filename:
             metadata_filename = repo_id + "/" + metadata_filename
             metadata_download = agent.api.hf_hub_download(repo_id=repo_id,
-                                               repo_type="dataset",
-                                               filename=metadata_filename
-            )
+                                                          repo_type="dataset",
+                                                          filename=metadata_filename
+                                                          )
 
     except Exception as e:
         click.echo(f"Error meanwhile downloading: {e}")
@@ -2572,8 +2597,9 @@ def download_embeddings(path, collection, repo_id, embeddings_filename, metadata
                     raise ValueError(
                         f"Error parsing metadata file: {e}. Downloaded metadata is not in the correct format.") from e
 
-        objects = [{k:v for k, v in obj.items()} for obj in store_objects]
-        db.insert_from_huggingface(collection=collection, objs=objects, venomx=metadata_obj)
+        objects = [{k: v for k, v in obj.items()} for obj in store_objects]
+        db.insert_from_huggingface(
+            collection=collection, objs=objects, venomx=metadata_obj)
     except Exception as e:
         raise e
 
@@ -2689,7 +2715,8 @@ def view_index(
         if collection in store.list_collection_names():
             store.remove_collection(collection)
     objs = wrapper.objects()
-    store.insert(objs, model=model, collection=collection, batch_size=batch_size)
+    store.insert(objs, model=model, collection=collection,
+                 batch_size=batch_size)
 
 
 @view.command(name="ask")
@@ -2805,7 +2832,8 @@ def index(directory):  # noqa: F811
     from paperqa.agents.search import get_directory_index
 
     directory_path = Path(directory).absolute()
-    pdf_files = [f for f in os.listdir(directory_path) if f.lower().endswith('.pdf')]
+    pdf_files = [f for f in os.listdir(
+        directory_path) if f.lower().endswith('.pdf')]
     click.echo(f"Found {len(pdf_files)} PDF files to index.")
     os.environ["PQA_HOME"] = str(directory_path)
     click.echo(f"Set PQA_HOME={directory_path}")
@@ -2819,6 +2847,7 @@ def index(directory):  # noqa: F811
         click.echo("2. Selecting 'Alzheimer's Papers (via PaperQA)' in the app")
     except Exception as e:
         click.echo(f"Error creating index: {e}")
+
 
 if __name__ == "__main__":
     main()

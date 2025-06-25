@@ -67,7 +67,8 @@ class DragonAgent(BaseAgent):
     background_document_limit: int = 3
     """Number of background documents to use. TODO: more sophisticated way to estimate."""
 
-    default_masked_fields: List[str] = field(default_factory=lambda: ["original_id"])
+    default_masked_fields: List[str] = field(
+        default_factory=lambda: ["original_id"])
 
     def complete(
         self,
@@ -139,10 +140,12 @@ class DragonAgent(BaseAgent):
             elif isinstance(obj, str):
                 return f"{prefix} {target_class} with {context_property} = {obj}"
             else:
-                raise ValueError(f"Invalid type for obj: {type(obj)} //  {obj}")
+                raise ValueError(
+                    f"Invalid type for obj: {type(obj)} //  {obj}")
 
         annotated_examples = []
-        seed_search_term = seed if isinstance(seed, str) else yaml.safe_dump(seed, sort_keys=True)
+        seed_search_term = seed if isinstance(
+            seed, str) else yaml.safe_dump(seed, sort_keys=True)
         logger.debug(f"Searching for seed: {seed_search_term}")
         for obj, _, _obj_meta in self.knowledge_source.search(
             seed_search_term,
@@ -167,7 +170,8 @@ class DragonAgent(BaseAgent):
                     f"Num examples={len(annotated_examples)}"
                 )
                 continue
-            ae = AnnotatedObject(object=obj_predicted_part, annotations={"text": input_text})
+            ae = AnnotatedObject(object=obj_predicted_part,
+                                 annotations={"text": input_text})
             annotated_examples.append(ae)
         if not annotated_examples:
             logger.error(f"No suitable examples found for seed: {seed}")
@@ -181,7 +185,7 @@ class DragonAgent(BaseAgent):
             ):
                 obj_text = obj_meta["document"]
                 # TODO: use tiktoken to estimate
-                obj_text = obj_text[0 : self.max_background_document_size]
+                obj_text = obj_text[0: self.max_background_document_size]
                 docs.append(obj_text)
         gen_text = generate_input_str(seed)
         if generate_background:
@@ -249,7 +253,8 @@ class DragonAgent(BaseAgent):
                 continue
             curr_val = obj.get(field_to_predict, None)
             if missing_only and curr_val:
-                logger.debug(f"Skipping; {field_to_predict} already present: {curr_val}")
+                logger.debug(
+                    f"Skipping; {field_to_predict} already present: {curr_val}")
                 continue
             ao = self.complete(obj, collection=collection, **kwargs)
             yield PredictedFieldValue(
@@ -286,7 +291,7 @@ class DragonAgent(BaseAgent):
         response = self.extractor.model.prompt(prompt, system=system)
         txt = response.text()
         if "." in txt:
-            txt = txt[0 : txt.index(".")]
+            txt = txt[0: txt.index(".")]
         suggestions = txt.split(",")
         suggestions = [x.strip() for x in suggestions]
         ids_norm = [x.lower() for x in ids]
@@ -309,7 +314,8 @@ class DragonAgent(BaseAgent):
         :param obj:
         """
         if fields_to_predict and not context_property:
-            raise ValueError("context_property is required if fields_to_predict")
+            raise ValueError(
+                "context_property is required if fields_to_predict")
 
         pk_val = obj.get(primary_key, None)
 
@@ -360,7 +366,8 @@ class DragonAgent(BaseAgent):
         if not isinstance(ao.object, dict):
             logger.warning(f"Expected dict, got {ao.object}")
             if isinstance(ao.object, list):
-                logger.warning(f"Taking first element of list of len {len(ao.object)}")
+                logger.warning(
+                    f"Taking first element of list of len {len(ao.object)}")
                 ao.object = ao.object[0]
         if isinstance(ao.object, dict):
             if context_property:

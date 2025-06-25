@@ -64,7 +64,8 @@ class BasicExtractor(Extractor):
                 break
             else:
                 # remove least relevant
-                logger.debug(f"Removing least relevant of {len(examples)}: {examples[-1]}")
+                logger.debug(
+                    f"Removing least relevant of {len(examples)}: {examples[-1]}")
                 examples.pop()
                 if len(examples) < min_examples:
                     raise ValueError(

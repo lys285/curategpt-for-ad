@@ -32,7 +32,8 @@ def select_from_options_prompt(
     """
     if prompt_template is None:
         if query is None:
-            raise ValueError("Either query or prompt_template must be specified.")
+            raise ValueError(
+                "Either query or prompt_template must be specified.")
         prompt_template = "I will first give background facts, then ask a question."
         prompt_template += "Use the background fact to answer\n"
         prompt_template += "---\nBackground facts:\n"
@@ -53,7 +54,8 @@ def select_from_options_prompt(
         current_length = 0
         for obj, _, _obj_meta in kb_results:
             i += 1
-            obj_text = yaml.dump({k: v for k, v in obj.items() if v}, sort_keys=False)
+            obj_text = yaml.dump(
+                {k: v for k, v in obj.items() if v}, sort_keys=False)
             references[str(i)] = obj_text
             objects[str(i)] = obj
             if id_field and id_field in obj:
@@ -65,7 +67,8 @@ def select_from_options_prompt(
         prompt = prompt_template.format(body="".join(texts), query=query)
         logger.info(f"Prompt: {prompt}")
         estimated_length = estimate_num_tokens([prompt])
-        logger.debug(f"Max tokens {model.model_id}: {max_tokens_by_model(model.model_id)}")
+        logger.debug(
+            f"Max tokens {model.model_id}: {max_tokens_by_model(model.model_id)}")
         # TODO: use a more precise estimate of the length
         if estimated_length + 300 < max_tokens_by_model(model.model_id):
             break

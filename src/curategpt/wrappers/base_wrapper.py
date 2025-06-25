@@ -75,7 +75,8 @@ class BaseWrapper(ABC):  # noqa: B024
         if not cache:
             db.remove_collection(collection, exists_ok=True)
         logger.info(f"Inserting {len(parsed_data)} records into {collection}")
-        db.upsert(parsed_data, collection=collection, model=self.default_embedding_model)
+        db.upsert(parsed_data, collection=collection,
+                  model=self.default_embedding_model)
         db.update_collection_metadata(
             collection,
             object_type="Publication",
@@ -93,7 +94,6 @@ class BaseWrapper(ABC):  # noqa: B024
     #         external_search_limit: Optional[int] = None,
     #         **kwargs,
     # ):
-
 
     def objects(
         self, collection: str = None, object_ids: Iterable[str] = None, **kwargs
@@ -158,7 +158,8 @@ class BaseWrapper(ABC):  # noqa: B024
         # prime the pubmed cache
         if collection is None:
             collection = self._cached_collection_name()
-        logger.info(f"Ensure pubmed cached for {query}, kwargs={kwargs}, self={self}")
+        logger.info(
+            f"Ensure pubmed cached for {query}, kwargs={kwargs}, self={self}")
         _ = list(self.search(query, collection=collection, **kwargs))
         # ensure the collection exists and is configured correctly
         self.local_store.update_collection_metadata(
@@ -167,7 +168,8 @@ class BaseWrapper(ABC):  # noqa: B024
             object_type=self.default_object_type,
             description=f"Special cache for {self.name} searches",
         )
-        chat = ChatAgent(knowledge_source=self.local_store, extractor=self.extractor)
+        chat = ChatAgent(knowledge_source=self.local_store,
+                         extractor=self.extractor)
         response = chat.chat(query, collection=collection)
         return response
 
@@ -194,9 +196,10 @@ class BaseWrapper(ABC):  # noqa: B024
                     new_obj = obj.copy()
                     n += 1
                     new_obj[id_field] = f"{obj_id}#{n}"
-                    new_obj[text_field] = text[: self.max_text_length + self.text_overlap]
+                    new_obj[text_field] = text[: self.max_text_length +
+                                               self.text_overlap]
                     new_objects.append(new_obj)
-                    text = text[self.max_text_length :]
+                    text = text[self.max_text_length:]
             else:
                 new_objects.append(obj)
         return new_objects
