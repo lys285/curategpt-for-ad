@@ -29,7 +29,8 @@ def is_rate_limit_error(exception):
     stop=stop_after_attempt(3),
 )
 def query_model(model: Model, *args, **kwargs) -> Response:
-    logger.debug(f"Querying model {model.model_id}, args: {args}, kwargs: {kwargs}")
+    logger.debug(
+        f"Querying model {model.model_id}, args: {args}, kwargs: {kwargs}")
     response = model.prompt(*args, **kwargs)
     _text = response.text()
     return response
