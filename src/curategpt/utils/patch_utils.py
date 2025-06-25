@@ -1,7 +1,9 @@
+"""Utilities for converting patch dictionaries to OAK commands."""
+
 from typing import Dict, List
 
 
-def patches_to_oak_commands(patch_dict: Dict[str, List[Dict]], ont_path: str) -> str:
+def patches_to_oak_commands(patch_dict: Dict[str, List[Dict]], ont_path: str):
     for id, patches in patch_dict.items():
         notes = ""
         changes = []
