@@ -1,3 +1,5 @@
+"""Utility functions for formatting text and objects."""
+
 from typing import Dict
 
 import inflection
@@ -38,5 +40,5 @@ def remove_formatting(text: str, expect_format: str = "") -> str:
     :return:
     """
     if text.startswith("```" + expect_format):
-        return text[3 + len(expect_format) : -3]
+        return text[3 + len(expect_format): -3]
     return text
