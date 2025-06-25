@@ -1,4 +1,4 @@
-"""Chat with a KB."""
+"""A wrapper to pull from ontologies using OAK"""
 
 import logging
 from collections import defaultdict
@@ -57,10 +57,12 @@ class OntologyWrapper(BaseWrapper):
     def external_search(self, text: str, expand: bool = True, limit: int = None, **kwargs) -> List:
         adapter = self.oak_adapter
         if not isinstance(adapter, SearchInterface):
-            raise ValueError(f"OAK adapter {self.oak_adapter} does not support search")
+            raise ValueError(
+                f"OAK adapter {self.oak_adapter} does not support search")
         cfg = SearchConfiguration(is_partial=True)
         chunk_iter = chunk(
-            adapter.basic_search(text, cfg), limit or self.default_max_search_results
+            adapter.basic_search(
+                text, cfg), limit or self.default_max_search_results
         )
         for object_ids in chunk_iter:
             print("object_ids", object_ids)
@@ -79,10 +81,12 @@ class OntologyWrapper(BaseWrapper):
 
         if self.branches:
             if not isinstance(adapter, OboGraphInterface):
-                raise ValueError(f"OAK adapter {self.oak_adapter} does not support branches")
+                raise ValueError(
+                    f"OAK adapter {self.oak_adapter} does not support branches")
             selected_ids = []
             for branch in self.branches:
-                selected_ids.extend(list(adapter.descendants([branch], predicates=[IS_A])))
+                selected_ids.extend(
+                    list(adapter.descendants([branch], predicates=[IS_A])))
             selected_ids = list(set(selected_ids))
         elif object_ids:
             selected_ids = list(object_ids)
@@ -91,7 +95,8 @@ class OntologyWrapper(BaseWrapper):
         logger.info(f"Found {len(selected_ids)} selected ids")
         # need to fetch ALL labels in store, even if not selected,
         # as may be used in references
-        labels = {e: lbl for e, lbl in adapter.labels(entities, allow_none=False)}
+        labels = {e: lbl for e, lbl in adapter.labels(
+            entities, allow_none=False)}
         logger.info(f"Found {len(labels)} labels")
         definitions = {}
         if self.fetch_definitions:
@@ -102,7 +107,8 @@ class OntologyWrapper(BaseWrapper):
         if self.fetch_aliases:
             for sub in entities:
                 entity_aliases = list(adapter.entity_aliases(sub))
-                cleaned = [alias if alias is not None else "" for alias in entity_aliases]
+                cleaned = [
+                    alias if alias is not None else "" for alias in entity_aliases]
                 aliases_by_entity[sub] = cleaned
         relationships = defaultdict(list)
         if self.fetch_relationships:
@@ -141,7 +147,8 @@ class OntologyWrapper(BaseWrapper):
                     if not obj.relationships:
                         obj.relationships = []
                     obj.relationships.append(
-                        Relationship(predicate=k, target=self._as_shorthand(tgt))
+                        Relationship(
+                            predicate=k, target=self._as_shorthand(tgt))
                     )
             if id in definitions:
                 obj.definition = definitions[id]
