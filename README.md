@@ -1,284 +1,57 @@
-# CurateGPT
+k# CurateGPT
+
+**NOTE**: This repository has been copied from the following repository O'Neil, S., & Mungall, C. (2023). CurateGPT [Computer software]. https://doi.org/10.5281/zenodo.8388002 and changes have been made to allow longer text length to run through the extract function in the streamlit app. We are using this repository to extract information on white matter tracks found in Alzheimer's and Alzheimer's related disease research papers through with the Uberon ontology already available in CurateGPT. Below are the instructions specifically for this project. 
 
 [![DOI](https://zenodo.org/badge/645996391.svg)](https://zenodo.org/doi/10.5281/zenodo.8293691)
-
 
 CurateGPT is a prototype web application and framework for performing general purpose AI-guided curation
 and curation-related operations over *collections* of objects.
 
-
-See also the app on [curategpt.io](https://curategpt.io) (note: this is sometimes down, and may only have a
-subset of the functionality of the local app)
-
-
 ## Getting started
 
-### User installation
-
-CurateGPT is available on Pypi and may be installed with `pip`:
-
+#### Clone the repository
+#### Enter the Directory
+`cd curategpt-for-ad/`
+#### Install Developer and Dependencies
+`sudo apt install python3-poetry`
+`poetry install`
+`poetry shell` ##You will need to run this every time you use curategpt. More on this below on Usage
 `pip install curategpt`
-
-### Developer installation
-
-You will first need to [install Poetry](https://python-poetry.org/docs/#installation).
-
-Then clone this repo.
-
-```
-git clone https://github.com/monarch-initiative/curategpt.git
-cd curategpt
-```
-
-and install the dependencies:
-
-
-```
-poetry install
-```
-
-### API keys
-
+`pip install paper-qa`
+#### Export OpenAI Key. You will need to get a key from OpenAI yourself
 In order to get the best performance from CurateGPT, we recommend getting an OpenAI API key, and setting it:
+`export OPENAI_API_KEY=<enter_api_key_here>`
+#### Generate Github token. You will need to retrieve this from Github yourself
+General instructions: Go to Settings>Developer Settings>Personal Access Tokens>Fine Grained Tokens and then create a token name and under repositories select "public repositories" then select the generate the token green button. 
 
+## Usage
+### Step 1: In Command Line
 ```
-export OPENAI_API_KEY=<your key>
+poetry shell
 ```
-
-(for members of Monarch: ask on Slack if you would like to use the group key)
-
-CurateGPT will also work with other large language models - see "Selecting models" below.
-
-## Loading example data and running the app
-
-You initially start with an empty database. You can load whatever you like into this
-database! Any JSON, YAML, or CSV is accepted.
-CurateGPT comes with *wrappers* for some existing local and remote sources, including
-ontologies. The [Makefile](Makefile) contains some examples of how to load these. You can
-load any ontology using the `ont-<name>` target, e.g.:
-
 ```
-make ont-cl
+make ont-uberon
 ```
-
-This loads CL (via OAK) into a collection called `ont_cl`
+This loads the Uberon ontology for our use into `ont_uberon`
 
 Note that by default this loads into a collection set stored at `stagedb`, whereas the app works off
-of `db`. You can copy the collection set to the db with:
-
+of `db`. You can and must copy the collection set to the db with for us to use in the app:
 ```
 cp -r stagedb/* db/
 ```
-
-
 You can then run the streamlit app with:
-
 ```
 make app
 ```
-
-## Building Indexes
-
-CurateGPT depends on vector database indexes of the databases/ontologies you want to curate.
-
-The flagship application is ontology curation, so to build an index for an OBO ontology like CL:
-
-```
-make ont-cl
-```
-
-This requires an OpenAI key.
-
-(You can build indexes using an open embedding model, modify the command to leave off
-the `-m` option, but this is not recommended as currently oai embeddings seem to work best).
-
-
-To load the default ontologies:
-
-```
-make all
-```
-
-(this may take some time)
-
-To load different databases:
-
-```
-make load-db-hpoa
-make load-db-reactome
-```
-
-
-
-You can load an arbitrary json, yaml, or csv file:
-
-```
-curategpt view index -c my_foo foo.json
-```
-
-(you will need to do this in the poetry shell)
-
-To load a GitHub repo of issues:
-
-```
-curategpt -v view index -c gh_uberon -m openai:  --view github --init-with "{repo: obophenotype/uberon}"
-```
-
-The following are also supported:
-
-- Google Drives
-- Google Sheets
-- Markdown files
-- LinkML Schemas
-- HPOA files
-- GOCAMs
-- MAXOA files
-- Many more
-
-## Notebooks
-
-- See [notebooks](notebooks) for examples.
-
-## Selecting models
-
-Currently this tool works best with the OpenAI gpt-4 model (for instruction tasks) and OpenAI `ada-text-embedding-002` for embedding.
-
-CurateGPT is layered on top of [simonw/llm](https://github.com/simonw/llm) which has a plugin
-architecture for using alternative models. In theory you can use any of these plugins.
-
-Additionally, you can set up an openai-emulating proxy using [litellm](https://github.com/BerriAI/litellm/).
-
-The `litellm` proxy may be installed with `pip` as `pip install litellm[proxy]`.
-
-Let's say you want to run mixtral locally using ollama. You start up ollama (you may have to run `ollama serve` first):
-
-```
-ollama run mixtral
-```
-
-Then start up litellm:
-
-```
-litellm -m ollama/mixtral
-```
-
-Next edit your `extra-openai-models.yaml` as detailed in [the llm docs](https://llm.datasette.io/en/stable/other-models.html):
-
-```
-- model_name: ollama/mixtral
-  model_id: litellm-mixtral
-  api_base: "http://0.0.0.0:8000"
-```
-
-You can now use this:
-
-```yaml
-curategpt ask -m litellm-mixtral -c ont_cl "What neurotransmitter is released by the hippocampus?"
-```
-
-But be warned that many of the prompts in curategpt were engineered
-against openai models, and they may give suboptimal results or fail
-entirely on other models. As an example, `ask` seems to work quite
-well with mixtral, but `complete` works horribly. We haven't yet
-investigated if the issue is the model or our prompts or the overall
-approach.
-
-Welcome to the world of AI engineering!
-
-## Using the command line
-
-```bash
-curategpt --help
-```
-
-You will see various commands for working with indexes, searching, extracting, generating, etc.
-
-These functions are generally available through the UI, and the current priority is documenting these.
-
-### Chatting with a knowledge base
-
-```
-curategpt ask -c ont_cl "What neurotransmitter is released by the hippocampus?"
-```
-
-may yield something like:
-
-```
-The hippocampus releases gamma-aminobutyric acid (GABA) as a neurotransmitter [1](#ref-1).
-
-...
-
-## 1
-
-id: GammaAminobutyricAcidSecretion_neurotransmission
-label: gamma-aminobutyric acid secretion, neurotransmission
-definition: The regulated release of gamma-aminobutyric acid by a cell, in which the
-  gamma-aminobutyric acid acts as a neurotransmitter.
-...
-```
-
-### Chatting with pubmed
-
-```
-curategpt view ask -V pubmed "what neurons express VIP?"
-```
-
-### Chatting with a GitHub issue tracker
-
-```
-curategpt ask -c gh_obi "what are some new term requests for electrophysiology terms?"
-```
-
-### Term Autocompletion (DRAGON-AI)
-
-```
-curategpt complete -c ont_cl  "mesenchymal stem cell of the apical papilla"
-```
-
-yields
-
-```yaml
-id: MesenchymalStemCellOfTheApicalPapilla
-definition: A mesenchymal cell that is part of the apical papilla of a tooth and has
-  the ability to self-renew and differentiate into various cell types such as odontoblasts,
-  fibroblasts, and osteoblasts.
-relationships:
-- predicate: PartOf
-  target: ApicalPapilla
-- predicate: subClassOf
-  target: MesenchymalCell
-- predicate: subClassOf
-  target: StemCell
-original_id: CL:0007045
-label: mesenchymal stem cell of the apical papilla
-```
-
-### All-by-all comparisons
-
-You can compare all objects in one collection 
-
-`curategpt all-by-all --threshold 0.80 -c ont_hp -X ont_mp --ids-only -t csv > ~/tmp/allxall.mp.hp.csv`
-
-This takes 1-2s, as it involves comparison over pre-computed vectors. It reports top hits above a threshold.
-
-Results may vary. You may want to try different texts for embeddings
-(the default is the entire json object; for ontologies it is
-concatenation of labels, definition, aliases).
-
-sample:
-
-```
-HP:5200068,Socially innappropriate questioning,MP:0001361,social withdrawal,0.844015132437909
-HP:5200069,Spinning,MP:0001411,spinning,0.9077306606290237
-HP:5200071,Delayed Echolalia,MP:0013140,excessive vocalization,0.8153252835818089
-HP:5200072,Immediate Echolalia,MP:0001410,head bobbing,0.8348177036912526
-HP:5200073,Excessive cleaning,MP:0001412,excessive scratching,0.8699103725005582
-HP:5200104,Abnormal play,MP:0020437,abnormal social play behavior,0.8984862078522344
-HP:5200105,Reduced imaginative play skills,MP:0001402,decreased locomotor activity,0.85571629684631
-HP:5200108,Nonfunctional or atypical use of objects in play,MP:0003908,decreased stereotypic behavior,0.8586700411012859
-HP:5200129,Abnormal rituals,MP:0010698,abnormal impulsive behavior control,0.8727804272023427
-HP:5200134,Jumping,MP:0001401,jumpy,0.9011393233129765
-```
-
-Note that CurateGPT has a separate component for using an LLM to evaluate candidate matches (see also https://arxiv.org/abs/2310.03666); this is
-not enabled by default, this would be expensive to run for a whole ontology.
+### Step 2: In Streamlit app (after running make app)
+- Under **Choose operation**, select **Extract**
+- Under **Choose collection** select **ont_uberon**
+- Under **Choose model** select **gpt-4o** (TO DO: find out if we can change curategpt to allow the newest GPT version)
+- Under **Extraction Strategy** select **Basic** (TO DO: find out why we are getting errors with OAI Function and SPIRES)
+- Under **Background knowledge** select **PubMED (via API)**. This we can play around with but this is what we had it set it to when practicing
+- In the **Text** box copy and paste the text from the research paper into the box
+- check the "Generate background" box
+- In the **Additional Instructions** box, enter the prompt below
+  - You are an expert in structured data extraction from scientific papers. You MUST output a JSON object with EXACTLY the following five required keys: "diseases", "white_matter_tracts", "diffusion_measures", "study_type", and "species". No other keys are allowed. Empty JSON {} is INVALID. Follow this procedure EXACTLY and IN ORDER. STEP 1 — STUDY CLASSIFICATION: Determine (A) whether the paper is a review paper or an original single study and (B) whether it is a human study or a non-human study (animal, in vitro, or computational). STEP 2 — FIELD-LEVEL EXTRACTION RULES: The restriction below applies ONLY to the field "white_matter_tracts". If the study is NON-HUMAN OR a REVIEW PAPER, you MUST set "white_matter_tracts" to " " and you are NOT allowed to list, infer, summarize, or extract white matter tracts. All other fields MUST still be filled if information is present. STEP 3 — DATA EXTRACTION: Populate all five keys. If information for any field is missing or uncertain, output " " for that field. IMPORTANT CONSTRAINTS: Do NOT hallucinate. Do NOT infer white matter tracts from anatomy, figures, or background text. Violating the white_matter_tracts rule is an error. Output JSON ONLY.
+  - Set **Max examples** to 10. This we can play around with but this is what we had it set it to when practicing
+  - Select **Extract**
